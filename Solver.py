@@ -85,7 +85,7 @@ class Schrodinger_1d:
 
         --------------------------------------------
         Note:
-            实对称矩阵特征值一定是实数，可以比较大小
+            实对称矩阵的特征值一定是实数，特征向量也都是实向量
         """
         w, v = torch.linalg.eigh(square_matrix)  # 特征值是升序排列的
         return w, v
@@ -141,18 +141,36 @@ class Schrodinger_1d:
         plt.legend(loc="best")
 
     def plot_probable(self, n_th=0):
-        """画概率密度函数 rho = psi^H @ psi"""
-        rho = np.abs(self.eigen_state(n_th)) ** 2
-        # 格式化输出%.2e保留2位小数位，使用科学计数法
-        leg = r"$E_{%s}=%.2e$" % (n_th, self.eig_E[n_th])
-        plt.plot(self.X, rho, label=leg)
+        """
+        --------------------------------------------
+        Description:
+            画概率密度函数 rho = psi^H @ psi
+
+        --------------------------------------------
+        Note:
+            不返回图形，只作为图元素
+            把多个波函数画一张图里再show()
+        """
+        rho = self.eigen_state(n_th) ** 2  # 实对称矩阵的特征向量一定是实向量
+        leg = r"$E_{%s}=%.2e$" % (n_th, self.eig_E[n_th].item())  # 使用科学计数法保留2位小数位
+        plt.plot(self.X, rho.cpu(), label=leg)
         plt.ylabel(r"$\rho_{%s}(x)=\psi_{%s}^*(x)\psi_{%s}(x)$" % (n_th, n_th, n_th))
         plt.xlabel(r"$x$")
         plt.legend(loc="best")
 
     def plot_levels(self, num_levels=10):
+        """
+        --------------------------------------------
+        Description:
+            画能级
+        """
         for i in range(num_levels):
-            plt.plot(self.X, np.ones_like(self.X) * self.eig_E[i], "r-", linewidth=0.5)
+            plt.plot(
+                self.X,
+                torch.ones_like(self.X) * self.eig_E[i].cpu(),
+                "r-",
+                linewidth=0.5,
+            )
         plt.ylabel(r"Energy levels (J)")
         plt.xlabel(r"$x$")
 
